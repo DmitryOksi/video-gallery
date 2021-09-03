@@ -9,23 +9,23 @@ import {Video, VideoDocument} from './schemas/video.schema'
 export class VideoService {
   constructor(@InjectModel(Video.name) private videoModel: Model<VideoDocument>) {}
   
-  create(createVideoDto: CreateVideoDto) {
-    return 'This action adds a new video';
+  create(createVideoDto: CreateVideoDto): Promise<Video> {
+    return this.videoModel.create(createVideoDto);
   }
 
-  findAll() {
-    return `This action returns all video`;
+  findAll(): Promise<Video[]> {
+    return this.videoModel.find().exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} video`;
+  findById(id: string): Promise<Video> {
+    return this.videoModel.findById(id).exec();
   }
 
-  update(id: number, updateVideoDto: UpdateVideoDto) {
-    return `This action updates a #${id} video`;
+  update(id: string, updateVideoDto: UpdateVideoDto): Promise<Video> {
+    return this.videoModel.findByIdAndUpdate(id, updateVideoDto, { new: true }).exec();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} video`;
+  async remove(id: string): Promise<Video> {
+    return this.videoModel.findByIdAndDelete(id);
   }
 }
