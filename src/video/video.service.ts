@@ -1,9 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
+import {Video, VideoDocument} from './schemas/video.schema'
 
 @Injectable()
 export class VideoService {
+  constructor(@InjectModel(Video.name) private videoModel: Model<VideoDocument>) {}
+  
   create(createVideoDto: CreateVideoDto) {
     return 'This action adds a new video';
   }
