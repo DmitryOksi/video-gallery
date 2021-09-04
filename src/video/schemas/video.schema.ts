@@ -5,8 +5,8 @@ export type VideoDocument = Video & Document;
 
 @Schema()
 export class Video {
-    @Prop({required: true, unique: true})
-    public name: string;
+  @Prop({ required: true, unique: true })
+  public name: string;
 }
 
 export const VideoSchema = SchemaFactory.createForClass(Video);

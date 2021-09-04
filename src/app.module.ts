@@ -14,14 +14,13 @@ import { UserModule } from './user/user.module';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: getMongoConfig
+      useFactory: getMongoConfig,
     }),
     VideoModule,
     AuthModule,
-    UserModule
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-
 export class AppModule {}
