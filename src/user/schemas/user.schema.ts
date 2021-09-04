@@ -8,8 +8,8 @@ export class User {
   @Prop({unique: true, required: true})
   public email: string;
   
-  @Prop({default: null})
-  public hashedRefreshToken?: string & null;
+  @Prop({required: true})
+  public password: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
