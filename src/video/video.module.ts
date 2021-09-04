@@ -5,8 +5,19 @@ import { MongooseModule } from '@nestjs/mongoose';
 import {Video ,VideoSchema} from './schemas/video.schema';
 
 @Module({
-  imports: [MongooseModule.forFeature([{name: Video.name, schema: VideoSchema}])],
+  imports: [
+    MongooseModule.forFeatureAsync([
+      {
+        name: Video.name,
+        useFactory: () => {
+        const schema = VideoSchema;
+        return schema;
+        },
+      },
+    ]),
+  ],
   controllers: [VideoController],
   providers: [VideoService]
 })
+
 export class VideoModule {}

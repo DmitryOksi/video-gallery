@@ -5,6 +5,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { getMongoConfig } from './configs/mongo.config';
 import { VideoModule } from './video/video.module';
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -14,7 +16,9 @@ import { VideoModule } from './video/video.module';
       inject: [ConfigService],
       useFactory: getMongoConfig
     }),
-    VideoModule
+    VideoModule,
+    AuthModule,
+    UserModule
   ],
   controllers: [AppController],
   providers: [AppService],
