@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -44,6 +45,22 @@ export class AuthService {
     return refreshToken;
   }
 
+  public async register(authDto: AuthDto) {
+    const { email } = authDto;
+    const oldUser: User = await this.usersService.findUserByEmail(email);
+    if (oldUser) {
+      throw new BadRequestException(`user with email = ${email} already exist`);
+    }
+    const refreshToken: string = this.getJwtRefreshToken(email);
+    const accessToken: string = this.getJwtAccessToken(email);
+    const user: User = await this.usersService.create(refreshToken, authDto);
+    return {
+      user,
+      accessToken,
+      refreshToken,
+    };
+  }
+
   public async login(authDto: AuthDto) {
     const { email } = authDto;
     const user: User | null = await this.usersService.findUserByEmail(email);
@@ -52,15 +69,19 @@ export class AuthService {
     }
     const isCorrectPassword: boolean = await bcrypt.compare(
       authDto.password,
-      user.password,
+      user.hashedPassword,
     );
     if (!isCorrectPassword) {
       throw new ForbiddenException(`wrong password`);
     }
     const accessToken: string = this.getJwtAccessToken(email);
     const refreshToken: string = this.getJwtRefreshToken(email);
-    //TODO: in user add method to update refresh token
+    const updatedUser: User = await this.usersService.setCurrentRefreshToken(
+      refreshToken,
+      user.email,
+    );
     return {
+      user: updatedUser,
       accessToken,
       refreshToken,
     };
