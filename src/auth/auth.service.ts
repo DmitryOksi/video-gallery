@@ -86,4 +86,26 @@ export class AuthService {
       refreshToken,
     };
   }
+
+  public async logout(email: string): Promise<string> {
+    return await this.usersService.removeRefreshToken(email);
+  }
+
+  public async getAccessTokenByRefreshToken(
+    email: string,
+    currentRefreshToken: string,
+  ): Promise<string> {
+    const user: User = await this.usersService.findUserByEmail(email);
+    if (!user) {
+      throw new NotFoundException(`user with email = ${email} does not exist`);
+    }
+    const isCorrectRefreshToken: boolean = await bcrypt.compare(
+      currentRefreshToken,
+      user.hashedRefreshToken,
+    );
+    if (!isCorrectRefreshToken) {
+      throw new ForbiddenException(`refresh token does not match`);
+    }
+    return this.getJwtAccessToken(email);
+  }
 }

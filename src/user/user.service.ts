@@ -30,10 +30,7 @@ export class UserService {
       .split('')
       .map(() => '*')
       .join('');
-    user.hashedRefreshToken = user.hashedRefreshToken
-      .split('')
-      .map(() => '*')
-      .join('');
+    user.hashedRefreshToken = null;
     return user;
   }
 
@@ -49,5 +46,15 @@ export class UserService {
       },
     );
     return this.encryptPasswordAndRefreshToken(user);
+  }
+
+  async removeRefreshToken(email: string): Promise<string> {
+    await this.userModel.findOneAndUpdate(
+      { email },
+      {
+        hashedRefreshToken: null,
+      },
+    );
+    return 'user successfuly logout';
   }
 }

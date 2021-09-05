@@ -1,19 +1,38 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-  //TODO: logic to get accessToken by refreshToken
-  //TODO: logic to logout user
+  //TODO: depricate to make request not registered users
+  @HttpCode(200)
   @Post('login')
-  login(@Body() authDto: AuthDto) {
-    return this.authService.login(authDto);
+  async login(@Body() authDto: AuthDto) {
+    return await this.authService.login(authDto);
   }
 
+  @HttpCode(200)
   @Post('register')
-  register(@Body() authDto: AuthDto) {
-    return this.authService.register(authDto);
+  async register(@Body() authDto: AuthDto) {
+    return await this.authService.register(authDto);
+  }
+
+  @HttpCode(200)
+  @Post('logout')
+  async logout(@Body('email') email: string): Promise<string> {
+    return await this.authService.logout(email);
+  }
+
+  @HttpCode(200)
+  @Post('access-token')
+  async getAccessTokenByRefreshToken(
+    @Body('email') email: string,
+    @Body('currentRefreshToken') currentRefreshToken: string,
+  ): Promise<string> {
+    return await this.authService.getAccessTokenByRefreshToken(
+      email,
+      currentRefreshToken,
+    );
   }
 }
