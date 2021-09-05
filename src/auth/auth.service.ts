@@ -45,6 +45,18 @@ export class AuthService {
     return refreshToken;
   }
 
+  private getCookieByRefreshToken(refreshToken: string): string {
+    return `Refresh=${refreshToken}; HttpOnly; Path=/; Max-Age=${this.configService.get(
+      'JWT_REFRESH_TOKEN_EXPIRATION_TIME',
+    )}`;
+  }
+
+  private getCookieByAccessToken(accessToken: string): string {
+    return `Authentication=${accessToken}; HttpOnly; Path=/; Max-Age=${this.configService.get(
+      'JWT_ACCESS_TOKEN_EXPIRATION_TIME',
+    )}`;
+  }
+
   public async register(authDto: AuthDto) {
     const { email } = authDto;
     const oldUser: User = await this.usersService.findUserByEmail(email);
@@ -56,8 +68,8 @@ export class AuthService {
     const user: User = await this.usersService.create(refreshToken, authDto);
     return {
       user,
-      accessToken,
-      refreshToken,
+      refreshTokenCookie: this.getCookieByRefreshToken(refreshToken),
+      accessTokenCookie: this.getCookieByAccessToken(accessToken),
     };
   }
 
@@ -82,13 +94,21 @@ export class AuthService {
     );
     return {
       user: updatedUser,
-      accessToken,
-      refreshToken,
+      refreshTokenCookie: this.getCookieByRefreshToken(refreshToken),
+      accessTokenCookie: this.getCookieByAccessToken(accessToken),
     };
   }
 
-  public async logout(email: string): Promise<string> {
-    return await this.usersService.removeRefreshToken(email);
+  public getCookiesForLogOut() {
+    return [
+      'Authentication=; HttpOnly; Path=/; Max-Age=0',
+      'Refresh=; HttpOnly; Path=/; Max-Age=0',
+    ];
+  }
+
+  public async logout(email: string): Promise<string[]> {
+    await this.usersService.removeRefreshToken(email);
+    return this.getCookiesForLogOut();
   }
 
   public async getAccessTokenByRefreshToken(

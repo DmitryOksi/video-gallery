@@ -1,6 +1,7 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
+import { Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -8,20 +9,31 @@ export class AuthController {
   //TODO: depricate to make request not registered users
   @HttpCode(200)
   @Post('login')
-  async login(@Body() authDto: AuthDto) {
-    return await this.authService.login(authDto);
+  async login(@Req() req: Request) {
+    const authDto: AuthDto = req.body;
+    const { refreshTokenCookie, accessTokenCookie, user } =
+      await this.authService.login(authDto);
+    req.res.setHeader('Set-Cookie', [refreshTokenCookie, accessTokenCookie]);
+    return user;
   }
 
   @HttpCode(200)
   @Post('register')
-  async register(@Body() authDto: AuthDto) {
-    return await this.authService.register(authDto);
+  async register(@Req() req: Request) {
+    const authDto: AuthDto = req.body;
+    const { user, refreshTokenCookie, accessTokenCookie } =
+      await this.authService.register(authDto);
+    req.res.setHeader('Set-Cookie', [refreshTokenCookie, accessTokenCookie]);
+    return user;
   }
 
   @HttpCode(200)
   @Post('logout')
-  async logout(@Body('email') email: string): Promise<string> {
-    return await this.authService.logout(email);
+  async logout(@Req() req: Request) {
+    const {
+      body: { email },
+    } = req;
+    req.res.setHeader('Set-Cookie', await this.authService.logout(email));
   }
 
   @HttpCode(200)
