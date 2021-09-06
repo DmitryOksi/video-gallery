@@ -14,7 +14,6 @@ import { User } from 'src/user/schemas/user.schema';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-  //TODO: depricate to make request not registered users
   @HttpCode(200)
   @Post('login')
   async login(@Req() req: Request): Promise<User> {
@@ -47,7 +46,9 @@ export class AuthController {
 
   @HttpCode(200)
   @Get('access-token/:email')
-  async getAccessTokenByRefreshToken(@Req() req: Request) {
+  async getAccessTokenByRefreshToken(
+    @Req() req: Request & { user: IAccessTokenPayload },
+  ) {
     const {
       params: { email },
     } = req;

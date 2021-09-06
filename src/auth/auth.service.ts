@@ -10,10 +10,6 @@ import { User } from 'src/user/schemas/user.schema';
 import { UserService } from 'src/user/user.service';
 import { AuthDto } from './dto/auth.dto';
 
-interface TokenPayload {
-  email: string;
-}
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -23,7 +19,7 @@ export class AuthService {
   ) {}
 
   private getJwtAccessToken(email: string): string {
-    const payload: TokenPayload = { email };
+    const payload: IAccessTokenPayload = { email };
     const accessToken: string = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
       expiresIn: `${this.configService.get(
@@ -34,7 +30,7 @@ export class AuthService {
   }
 
   private getJwtRefreshToken(email: string): string {
-    const payload: TokenPayload = { email };
+    const payload: IAccessTokenPayload = { email };
     const refreshToken: string = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
       expiresIn: `${this.configService.get(

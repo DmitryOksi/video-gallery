@@ -4,8 +4,10 @@ import { User, UserSchema } from './schemas/user.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 
 const userMiddleware = {
+  virtuals: true,
   versionKey: false,
-  transform: function (doc: User, ret: User) {
+  transform: function (doc: User, ret: User & { _id }) {
+    delete ret._id;
     delete ret.hashedPassword;
     delete ret.refreshToken;
     return ret;
