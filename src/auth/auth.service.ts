@@ -56,7 +56,9 @@ export class AuthService {
     const { email } = authDto;
     const oldUser: User = await this.usersService.findUserByEmail(email);
     if (oldUser) {
-      throw new BadRequestException(`user with email = ${email} already exist`);
+      throw new BadRequestException(
+        `User with email = ${email} already exist, Please login`,
+      );
     }
     const refreshToken: string = this.getJwtRefreshToken(email);
     const accessToken: string = this.getJwtAccessToken(email);
@@ -102,18 +104,20 @@ export class AuthService {
     return this.getCookiesForLogOut();
   }
 
-  public async accessTokenCookieByRefreshToken(
+  public async getAccessTokenCookieByRefreshToken(
     currentRefreshToken: string,
     email: string,
   ): Promise<string> {
     const user: User = await this.usersService.findUserByEmail(email);
     if (!user) {
-      throw new NotFoundException(`user with email = ${email} does not exist`);
+      throw new NotFoundException(
+        `User with email = ${email} does not exist. Please provide existing email.`,
+      );
     }
     const isCorrectRefreshToken: boolean =
       currentRefreshToken === user.refreshToken;
     if (!isCorrectRefreshToken) {
-      throw new ForbiddenException(`refresh token does not match`);
+      throw new ForbiddenException(`Wrong refresh token. Please login.`);
     }
     const accessToken: string = this.getJwtAccessToken(email);
     return this.getCookieByAccessToken(accessToken);

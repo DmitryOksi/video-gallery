@@ -1,10 +1,10 @@
 import {
-  BadRequestException,
   Controller,
   Get,
   HttpCode,
   Post,
   Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
@@ -36,9 +36,9 @@ export class AuthController {
 
   @HttpCode(200)
   @Post('logout')
-  async logout(@Req() req: Request) {
+  async logout(@Req() req: Request & { user: IAccessTokenPayload }) {
     const {
-      body: { email },
+      user: { email },
     } = req;
     const cookiesForLogOut: string[] = await this.authService.logout(email);
     req.res.setHeader('Set-Cookie', cookiesForLogOut);
@@ -54,10 +54,10 @@ export class AuthController {
     } = req;
     const currentRefreshToken = req.cookies['Refresh'];
     if (!currentRefreshToken) {
-      throw new BadRequestException('cookies does not include refresh token');
+      throw new UnauthorizedException('Cookies does not include refresh token. Please login.');
     }
     const accessTokenCookie =
-      await this.authService.accessTokenCookieByRefreshToken(
+      await this.authService.getAccessTokenCookieByRefreshToken(
         currentRefreshToken,
         email,
       );
