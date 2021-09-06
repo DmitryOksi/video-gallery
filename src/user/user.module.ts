@@ -3,6 +3,15 @@ import { UserService } from './user.service';
 import { User, UserSchema } from './schemas/user.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 
+const userMiddleware = {
+  versionKey: false,
+  transform: function (doc: User, ret: User) {
+    delete ret.hashedPassword;
+    delete ret.hashedRefreshToken;
+    return ret;
+  },
+};
+
 @Module({
   imports: [
     MongooseModule.forFeatureAsync([
@@ -10,6 +19,7 @@ import { MongooseModule } from '@nestjs/mongoose';
         name: User.name,
         useFactory: () => {
           const schema = UserSchema;
+          schema.set('toJSON', userMiddleware);
           return schema;
         },
       },

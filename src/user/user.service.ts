@@ -13,25 +13,15 @@ export class UserService {
     const { email } = authDto;
     const hashedPassword: string = await bcrypt.hash(authDto.password, 10);
     const hashedRefreshToken: string = await bcrypt.hash(refreshToken, 10);
-    const user: User = await this.userModel.create({
+    return await this.userModel.create({
       email,
       hashedPassword,
       hashedRefreshToken,
     });
-    return this.encryptPasswordAndRefreshToken(user);
   }
 
   findUserByEmail(email: string): Promise<User> | Promise<null> {
     return this.userModel.findOne({ email }).exec();
-  }
-
-  private encryptPasswordAndRefreshToken(user: User) {
-    user.hashedPassword = user.hashedPassword
-      .split('')
-      .map(() => '*')
-      .join('');
-    user.hashedRefreshToken = null;
-    return user;
   }
 
   public async setCurrentRefreshToken(
@@ -39,13 +29,12 @@ export class UserService {
     email: string,
   ): Promise<User> {
     const hashedRefreshToken: string = await bcrypt.hash(refreshToken, 10);
-    const user: User = await this.userModel.findOneAndUpdate(
+    return await this.userModel.findOneAndUpdate(
       { email },
       {
         hashedRefreshToken,
       },
     );
-    return this.encryptPasswordAndRefreshToken(user);
   }
 
   async removeRefreshToken(email: string): Promise<string> {
