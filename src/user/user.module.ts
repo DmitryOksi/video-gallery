@@ -7,7 +7,7 @@ const userMiddleware = {
   versionKey: false,
   transform: function (doc: User, ret: User) {
     delete ret.hashedPassword;
-    delete ret.hashedRefreshToken;
+    delete ret.refreshToken;
     return ret;
   },
 };

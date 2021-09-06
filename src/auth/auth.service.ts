@@ -9,7 +9,6 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/user/schemas/user.schema';
 import { UserService } from 'src/user/user.service';
 import { AuthDto } from './dto/auth.dto';
-import * as bcrypt from 'bcrypt';
 
 interface TokenPayload {
   email: string;
@@ -74,32 +73,28 @@ export class AuthService {
   }
 
   public async login(authDto: AuthDto) {
-    const { email } = authDto;
-    const user: User | null = await this.usersService.findUserByEmail(email);
-    if (!user) {
-      throw new NotFoundException(`user with email = ${email} does not exist`);
-    }
-    const isCorrectPassword: boolean = await bcrypt.compare(
-      authDto.password,
-      user.hashedPassword,
+    const { email, password } = authDto;
+    const user: User = await this.usersService.isEmailAndPasswordValid(
+      email,
+      password,
     );
-    if (!isCorrectPassword) {
-      throw new ForbiddenException(`wrong password`);
-    }
     const accessToken: string = this.getJwtAccessToken(email);
     const refreshToken: string = this.getJwtRefreshToken(email);
     const updatedUser: User = await this.usersService.setCurrentRefreshToken(
       refreshToken,
       user.email,
     );
+    const accessTokenCookie: string = this.getCookieByAccessToken(accessToken);
+    const refreshTokenCookie: string =
+      this.getCookieByRefreshToken(refreshToken);
     return {
+      accessTokenCookie,
+      refreshTokenCookie,
       user: updatedUser,
-      refreshTokenCookie: this.getCookieByRefreshToken(refreshToken),
-      accessTokenCookie: this.getCookieByAccessToken(accessToken),
     };
   }
 
-  public getCookiesForLogOut() {
+  private getCookiesForLogOut(): string[] {
     return [
       'Authentication=; HttpOnly; Path=/; Max-Age=0',
       'Refresh=; HttpOnly; Path=/; Max-Age=0',
@@ -111,21 +106,20 @@ export class AuthService {
     return this.getCookiesForLogOut();
   }
 
-  public async getAccessTokenByRefreshToken(
-    email: string,
+  public async accessTokenCookieByRefreshToken(
     currentRefreshToken: string,
+    email: string,
   ): Promise<string> {
     const user: User = await this.usersService.findUserByEmail(email);
     if (!user) {
       throw new NotFoundException(`user with email = ${email} does not exist`);
     }
-    const isCorrectRefreshToken: boolean = await bcrypt.compare(
-      currentRefreshToken,
-      user.hashedRefreshToken,
-    );
+    const isCorrectRefreshToken: boolean =
+      currentRefreshToken === user.refreshToken;
     if (!isCorrectRefreshToken) {
       throw new ForbiddenException(`refresh token does not match`);
     }
-    return this.getJwtAccessToken(email);
+    const accessToken: string = this.getJwtAccessToken(email);
+    return this.getCookieByAccessToken(accessToken);
   }
 }

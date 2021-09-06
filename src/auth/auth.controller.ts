@@ -1,7 +1,15 @@
-import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
 import { Request } from 'express';
+import { User } from 'src/user/schemas/user.schema';
 
 @Controller('auth')
 export class AuthController {
@@ -9,21 +17,21 @@ export class AuthController {
   //TODO: depricate to make request not registered users
   @HttpCode(200)
   @Post('login')
-  async login(@Req() req: Request) {
+  async login(@Req() req: Request): Promise<User> {
     const authDto: AuthDto = req.body;
-    const { refreshTokenCookie, accessTokenCookie, user } =
+    const { accessTokenCookie, refreshTokenCookie, user } =
       await this.authService.login(authDto);
-    req.res.setHeader('Set-Cookie', [refreshTokenCookie, accessTokenCookie]);
+    req.res.setHeader('Set-Cookie', [accessTokenCookie, refreshTokenCookie]);
     return user;
   }
 
   @HttpCode(200)
   @Post('register')
-  async register(@Req() req: Request) {
+  async register(@Req() req: Request): Promise<User> {
     const authDto: AuthDto = req.body;
-    const { user, refreshTokenCookie, accessTokenCookie } =
+    const { accessTokenCookie, refreshTokenCookie, user } =
       await this.authService.register(authDto);
-    req.res.setHeader('Set-Cookie', [refreshTokenCookie, accessTokenCookie]);
+    req.res.setHeader('Set-Cookie', [accessTokenCookie, refreshTokenCookie]);
     return user;
   }
 
@@ -33,18 +41,25 @@ export class AuthController {
     const {
       body: { email },
     } = req;
-    req.res.setHeader('Set-Cookie', await this.authService.logout(email));
+    const cookiesForLogOut: string[] = await this.authService.logout(email);
+    req.res.setHeader('Set-Cookie', cookiesForLogOut);
   }
 
   @HttpCode(200)
-  @Post('access-token')
-  async getAccessTokenByRefreshToken(
-    @Body('email') email: string,
-    @Body('currentRefreshToken') currentRefreshToken: string,
-  ): Promise<string> {
-    return await this.authService.getAccessTokenByRefreshToken(
-      email,
-      currentRefreshToken,
-    );
+  @Get('access-token/:email')
+  async getAccessTokenByRefreshToken(@Req() req: Request) {
+    const {
+      params: { email },
+    } = req;
+    const currentRefreshToken = req.cookies['Refresh'];
+    if (!currentRefreshToken) {
+      throw new BadRequestException('cookies does not include refresh token');
+    }
+    const accessTokenCookie =
+      await this.authService.accessTokenCookieByRefreshToken(
+        currentRefreshToken,
+        email,
+      );
+    req.res.setHeader('Set-Cookie', [accessTokenCookie]);
   }
 }

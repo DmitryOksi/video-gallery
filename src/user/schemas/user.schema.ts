@@ -12,7 +12,7 @@ export class User {
   public hashedPassword: string;
 
   @Prop({ required: true })
-  public hashedRefreshToken: string;
+  public refreshToken: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
