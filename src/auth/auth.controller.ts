@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   HttpCode,
@@ -18,6 +19,10 @@ export class AuthController {
   @Post('login')
   async login(@Req() req: Request): Promise<User> {
     const authDto: AuthDto = req.body;
+    const { email, password } = authDto;
+    if (!email || !password) {
+      throw new BadRequestException('Email and password required!');
+    }
     const { accessTokenCookie, refreshTokenCookie, user } =
       await this.authService.login(authDto);
     req.res.setHeader('Set-Cookie', [accessTokenCookie, refreshTokenCookie]);
@@ -28,6 +33,10 @@ export class AuthController {
   @Post('register')
   async register(@Req() req: Request): Promise<User> {
     const authDto: AuthDto = req.body;
+    const { email, password } = authDto;
+    if (!email || !password) {
+      throw new BadRequestException('Email and password required!');
+    }
     const { accessTokenCookie, refreshTokenCookie, user } =
       await this.authService.register(authDto);
     req.res.setHeader('Set-Cookie', [accessTokenCookie, refreshTokenCookie]);
@@ -54,7 +63,9 @@ export class AuthController {
     } = req;
     const currentRefreshToken = req.cookies['Refresh'];
     if (!currentRefreshToken) {
-      throw new UnauthorizedException('Cookies does not include refresh token. Please login.');
+      throw new UnauthorizedException(
+        'Cookies does not include refresh token. Please login.',
+      );
     }
     const accessTokenCookie =
       await this.authService.getAccessTokenCookieByRefreshToken(

@@ -23,6 +23,13 @@ export class UserService {
     });
   }
 
+  public async findAll(offset: number, limit: number): Promise<User[]> {
+    return await this.userModel
+      .find()
+      .skip(+offset)
+      .limit(+limit);
+  }
+
   public findUserByEmail(email: string): Promise<User> | Promise<null> {
     return this.userModel.findOne({ email }).exec();
   }
