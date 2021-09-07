@@ -28,5 +28,6 @@ const videoMiddleware = {
   ],
   controllers: [VideoController],
   providers: [VideoService],
+  exports: [VideoService],
 })
 export class VideoModule {}

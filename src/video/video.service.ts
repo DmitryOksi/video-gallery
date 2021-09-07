@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
 import { Video, VideoDocument } from './schemas/video.schema';
 
@@ -13,6 +12,10 @@ export class VideoService {
 
   create(video: Video): Promise<Video> {
     return this.videoModel.create(video);
+  }
+
+  getVideosByUserId(userId: string): Promise<Video[]> {
+    return this.videoModel.find({ ownerId: userId }).exec();
   }
 
   findAll(): Promise<Video[]> {
