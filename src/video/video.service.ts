@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UpdateVideoDto } from './dto/update-video.dto';
@@ -22,8 +22,12 @@ export class VideoService {
     return this.videoModel.find().exec();
   }
 
-  findById(id: string): Promise<Video> {
-    return this.videoModel.findById(id).exec();
+  async findById(id: string): Promise<Video> {
+    try {
+      return await this.videoModel.findById(id).exec();
+    } catch (e) {
+      throw new NotFoundException(`Can't find video by id = ${id}`);
+    }
   }
 
   update(id: string, updateVideoDto: UpdateVideoDto): Promise<Video> {

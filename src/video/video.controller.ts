@@ -9,14 +9,17 @@ import {
   UseInterceptors,
   UploadedFile,
   ForbiddenException,
+  Res,
 } from '@nestjs/common';
-
 import { VideoService } from './video.service';
 import { CreateVideoDto } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
 import { Video } from './schemas/video.schema';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as path from 'path';
+import { createReadStream } from 'fs';
+import { join } from 'path';
+import { Response } from 'express';
 
 @Controller('videos')
 export class VideoController {
@@ -24,7 +27,7 @@ export class VideoController {
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file', { dest: 'uploads/' }))
-  async uploadFile(
+  async uploadVideo(
     @UploadedFile() file: Express.Multer.File,
     @Body('ownerId') ownerId: string,
   ): Promise<Video> {
@@ -47,14 +50,19 @@ export class VideoController {
     });
   }
 
+  @Get(':id')
+  async watchVideoById(@Res() res: Response, @Param('id') id: string) {
+    const { destination, filename }: Video = await this.videoService.findById(
+      id,
+    );
+    const filePath: string = path.join(destination, filename);
+    const file = createReadStream(join(process.cwd(), filePath));
+    file.pipe(res);
+  }
+
   @Get()
   findAll(): Promise<Video[]> {
     return this.videoService.findAll();
-  }
-
-  @Get(':id')
-  findById(@Param('id') id: string): Promise<Video> {
-    return this.videoService.findById(id);
   }
 
   @Patch(':id')
