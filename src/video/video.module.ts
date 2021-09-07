@@ -4,6 +4,15 @@ import { VideoController } from './video.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Video, VideoSchema } from './schemas/video.schema';
 
+const videoMiddleware = {
+  virtuals: true,
+  versionKey: false,
+  transform: function (doc: Video, ret: Video & { _id }) {
+    delete ret._id;
+    return ret;
+  },
+};
+
 @Module({
   imports: [
     MongooseModule.forFeatureAsync([
@@ -11,6 +20,7 @@ import { Video, VideoSchema } from './schemas/video.schema';
         name: Video.name,
         useFactory: () => {
           const schema = VideoSchema;
+          schema.set('toJSON', videoMiddleware);
           return schema;
         },
       },

@@ -11,8 +11,8 @@ export class VideoService {
     @InjectModel(Video.name) private videoModel: Model<VideoDocument>,
   ) {}
 
-  create(createVideoDto: CreateVideoDto): Promise<Video> {
-    return this.videoModel.create(createVideoDto);
+  create(video: Video): Promise<Video> {
+    return this.videoModel.create(video);
   }
 
   findAll(): Promise<Video[]> {

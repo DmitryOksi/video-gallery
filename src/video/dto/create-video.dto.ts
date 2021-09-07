@@ -1,3 +1,7 @@
 export class CreateVideoDto {
-  name: string;
+  originalname: string;
+  destination: string;
+  filename: string;
+  size: number;
+  mimetype: string;
 }
