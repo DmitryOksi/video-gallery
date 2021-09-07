@@ -24,7 +24,10 @@ export class VideoController {
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file', { dest: 'uploads/' }))
-  async uploadFile(@UploadedFile() file: Express.Multer.File): Promise<Video> {
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('ownerId') ownerId: string,
+  ): Promise<Video> {
     const {
       originalname,
       destination,
@@ -40,12 +43,8 @@ export class VideoController {
       destination,
       filename,
       size,
+      ownerId,
     });
-  }
-
-  @Post()
-  create(@Body() createVideoDto: CreateVideoDto): Promise<Video> {
-    return this.videoService.create(createVideoDto);
   }
 
   @Get()

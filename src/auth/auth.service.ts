@@ -13,7 +13,7 @@ import { AuthDto } from './dto/auth.dto';
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly usersService: UserService,
+    private readonly userService: UserService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
   ) {}
@@ -54,7 +54,7 @@ export class AuthService {
 
   public async register(authDto: AuthDto) {
     const { email } = authDto;
-    const oldUser: User = await this.usersService.findUserByEmail(email);
+    const oldUser: User = await this.userService.findUserByEmail(email);
     if (oldUser) {
       throw new BadRequestException(
         `User with email = ${email} already exist, Please login`,
@@ -62,7 +62,7 @@ export class AuthService {
     }
     const refreshToken: string = this.getJwtRefreshToken(email);
     const accessToken: string = this.getJwtAccessToken(email);
-    const user: User = await this.usersService.create(refreshToken, authDto);
+    const user: User = await this.userService.create(refreshToken, authDto);
     return {
       user,
       refreshTokenCookie: this.getCookieByRefreshToken(refreshToken),
@@ -72,13 +72,13 @@ export class AuthService {
 
   public async login(authDto: AuthDto) {
     const { email, password } = authDto;
-    const user: User = await this.usersService.isEmailAndPasswordValid(
+    const user: User = await this.userService.isEmailAndPasswordValid(
       email,
       password,
     );
     const accessToken: string = this.getJwtAccessToken(email);
     const refreshToken: string = this.getJwtRefreshToken(email);
-    const updatedUser: User = await this.usersService.setCurrentRefreshToken(
+    const updatedUser: User = await this.userService.setCurrentRefreshToken(
       refreshToken,
       user.email,
     );
@@ -100,7 +100,7 @@ export class AuthService {
   }
 
   public async logout(email: string): Promise<string[]> {
-    await this.usersService.removeRefreshToken(email);
+    await this.userService.removeRefreshToken(email);
     return this.getCookiesForLogOut();
   }
 
@@ -108,7 +108,7 @@ export class AuthService {
     currentRefreshToken: string,
     email: string,
   ): Promise<string> {
-    const user: User = await this.usersService.findUserByEmail(email);
+    const user: User = await this.userService.findUserByEmail(email);
     if (!user) {
       throw new NotFoundException(
         `User with email = ${email} does not exist. Please provide existing email.`,

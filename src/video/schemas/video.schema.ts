@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import * as mongoose from 'mongoose';
 
-export type VideoDocument = Video & Document;
+export type VideoDocument = Video & mongoose.Document;
 
 @Schema()
 export class Video {
@@ -16,6 +16,9 @@ export class Video {
 
   @Prop({ required: true })
   public size: number;
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  public ownerId: string;
 }
 
 export const VideoSchema = SchemaFactory.createForClass(Video);
