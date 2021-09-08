@@ -14,7 +14,7 @@ export class VideoService {
     return this.videoModel.create(video);
   }
 
-  getVideosByUserId(userId: string): Promise<Video[]> {
+  getByUserId(userId: string): Promise<Video[]> {
     return this.videoModel.find({ ownerId: userId }).exec();
   }
 

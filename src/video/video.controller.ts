@@ -10,6 +10,7 @@ import {
   UploadedFile,
   ForbiddenException,
   Res,
+  Req,
 } from '@nestjs/common';
 import { VideoService } from './video.service';
 import { CreateVideoDto } from './dto/create-video.dto';
@@ -19,17 +20,17 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import * as path from 'path';
 import { createReadStream } from 'fs';
 import { join } from 'path';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 
 @Controller('videos')
 export class VideoController {
   constructor(private readonly videoService: VideoService) {}
 
-  @Post('upload')
+  @Post()
   @UseInterceptors(FileInterceptor('file', { dest: 'uploads/' }))
   async uploadVideo(
     @UploadedFile() file: Express.Multer.File,
-    @Body('ownerId') ownerId: string,
+    @Req() req: Request & { user: IAccessTokenPayload },
   ): Promise<Video> {
     const {
       originalname,
@@ -38,6 +39,9 @@ export class VideoController {
       size,
       mimetype,
     }: CreateVideoDto = file;
+    const {
+      user: { id: ownerId },
+    } = req;
     if (path.basename(path.dirname(mimetype)) !== 'video') {
       throw new ForbiddenException('You can upload only video files!');
     }
@@ -61,8 +65,13 @@ export class VideoController {
   }
 
   @Get()
-  findAll(): Promise<Video[]> {
-    return this.videoService.findAll();
+  getByUserId(
+    @Req() req: Request & { user: IAccessTokenPayload },
+  ): Promise<Video[]> {
+    const {
+      user: { id: userId },
+    } = req;
+    return this.videoService.getByUserId(userId);
   }
 
   @Patch(':id')

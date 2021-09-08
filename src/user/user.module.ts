@@ -3,7 +3,6 @@ import { UserService } from './user.service';
 import { User, UserSchema, UserType } from './schemas/user.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserController } from './user.controller';
-import { VideoModule } from 'src/video/video.module';
 
 const userMiddleware = {
   virtuals: true,
@@ -18,7 +17,6 @@ const userMiddleware = {
 
 @Module({
   imports: [
-    VideoModule,
     MongooseModule.forFeatureAsync([
       {
         name: User.name,
