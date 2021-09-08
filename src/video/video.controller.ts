@@ -76,11 +76,9 @@ export class VideoController {
     const {
       user: { id: ownerId },
     } = req;
-    const isUserAccess: boolean = await this.videoService.checkUserAccess(
-      id,
-      ownerId,
-    );
-    if (!isUserAccess) {
+    const isUserAccessToGet: boolean =
+      await this.videoService.checkUserAccessToGet(id, ownerId);
+    if (!isUserAccessToGet) {
       throw new ForbiddenException(
         'You do not have access to watch provided video',
       );
@@ -112,7 +110,20 @@ export class VideoController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string): Promise<Video> {
-    return await this.videoService.remove(id);
+  async remove(
+    @Param('id') id: string,
+    @Req() req: Request & { user: IAccessTokenPayload },
+  ): Promise<Video> {
+    const {
+      user: { id: ownerId },
+    } = req;
+    const isUserAccessToDelete: boolean =
+      await this.videoService.checkUserAccessToDelete(id, ownerId);
+    if (!isUserAccessToDelete) {
+      throw new ForbiddenException(
+        'You do not have access to delete provided video',
+      );
+    }
+    return await this.videoService.delete(id);
   }
 }

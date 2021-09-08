@@ -55,11 +55,11 @@ export class VideoService {
   }
 
   async findById(id: string): Promise<Video> {
-    try {
-      return await this.videoModel.findById(id).exec();
-    } catch (e) {
-      throw new NotFoundException(`Can't find video by id = ${id}`);
+    const video: Video = await this.videoModel.findById(id);
+    if (!video) {
+      throw new NotFoundException('Provided video does not exist');
     }
+    return video;
   }
 
   update(id: string, updateVideoDto: UpdateVideoDto): Promise<Video> {
@@ -68,15 +68,20 @@ export class VideoService {
       .exec();
   }
 
-  async remove(id: string): Promise<Video> {
+  async delete(id: string): Promise<Video> {
     return this.videoModel.findByIdAndDelete(id);
   }
 
-  async checkUserAccess(id: string, ownerId: string): Promise<boolean> {
+  async checkUserAccessToGet(id: string, ownerId: string): Promise<boolean> {
     const video: Video = await this.findById(id);
     const user: UserType = await this.userService.findById(ownerId);
     return (
       video.ownerId.toString() === ownerId || user.sharedVideoIds.includes(id)
     );
+  }
+
+  async checkUserAccessToDelete(id: string, ownerId: string): Promise<boolean> {
+    const video: Video = await this.findById(id);
+    return video.ownerId.toString() === ownerId;
   }
 }
