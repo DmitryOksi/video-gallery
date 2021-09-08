@@ -15,8 +15,8 @@ export class User {
   @Prop({ default: null })
   public refreshToken: string | null;
 
-  @Prop([{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }])
-  public videoIds: string[];
+  @Prop([{ type: mongoose.Schema.Types.ObjectId, ref: 'Video' }])
+  public sharedVideoIds: string[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

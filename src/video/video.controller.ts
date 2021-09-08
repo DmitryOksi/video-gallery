@@ -21,6 +21,7 @@ import * as path from 'path';
 import { createReadStream } from 'fs';
 import { join } from 'path';
 import { Response, Request } from 'express';
+import { UserType } from 'src/user/schemas/user.schema';
 
 @Controller('videos')
 export class VideoController {
@@ -52,6 +53,18 @@ export class VideoController {
       size,
       ownerId,
     });
+  }
+
+  @Patch('access')
+  async giveAccessToWatch(
+    @Req() req: Request & { user: IAccessTokenPayload },
+    @Body('videoId') videoId: string,
+    @Body('userId') userId: string,
+  ): Promise<UserType> {
+    const {
+      user: { id: ownerId },
+    } = req;
+    return await this.videoService.giveAccessToWatch(videoId, ownerId, userId);
   }
 
   @Get(':id')

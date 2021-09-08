@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   ForbiddenException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -11,7 +12,9 @@ import { AuthDto } from 'src/auth/dto/auth.dto';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+  ) {}
 
   public async create(authDto: AuthDto): Promise<UserType> {
     const { email } = authDto;
@@ -69,6 +72,27 @@ export class UserService {
   async removeRefreshToken(id: string): Promise<UserType> {
     const user: UserDocument = await this.userModel.findById(id);
     user.refreshToken = null;
+    return await user.save();
+  }
+
+  async giveAccessToWatchVideo(
+    videoId: string,
+    userId: string,
+  ): Promise<UserType> {
+    let user: UserDocument;
+    try {
+      user = await this.userModel.findById(userId);
+    } catch (e) {
+      throw new NotFoundException(
+        'You can not share video with not existing user!',
+      );
+    }
+    if (user.sharedVideoIds.includes(videoId)) {
+      throw new ForbiddenException(
+        'User already have permission to watch provided video',
+      );
+    }
+    user.sharedVideoIds.push(videoId);
     return await user.save();
   }
 }

@@ -1,17 +1,42 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { UserType } from 'src/user/schemas/user.schema';
+import { UserService } from 'src/user/user.service';
 import { UpdateVideoDto } from './dto/update-video.dto';
 import { Video, VideoDocument } from './schemas/video.schema';
 
 @Injectable()
 export class VideoService {
   constructor(
-    @InjectModel(Video.name) private videoModel: Model<VideoDocument>,
+    @InjectModel(Video.name) private readonly videoModel: Model<VideoDocument>,
+    private readonly userService: UserService,
   ) {}
 
   create(video: Video): Promise<Video> {
     return this.videoModel.create(video);
+  }
+
+  public async giveAccessToWatch(
+    videoId: string,
+    ownerId: string,
+    userId: string,
+  ): Promise<UserType> {
+    if (userId === ownerId) {
+      throw new BadRequestException(
+        'You can not share video with yourself, you already have access',
+      );
+    }
+    const video: Video = await this.findById(videoId);
+    if (video.ownerId.toString() !== ownerId) {
+      throw new ForbiddenException(`You do not have permission to share video`);
+    }
+    return await this.userService.giveAccessToWatchVideo(videoId, userId);
   }
 
   getByUserId(userId: string): Promise<Video[]> {
