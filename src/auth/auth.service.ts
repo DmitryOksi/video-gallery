@@ -2,7 +2,6 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -72,7 +71,7 @@ export class AuthService {
     const accessToken: string = this.getJwtAccessToken(user);
     const updatedUser: UserType = await this.userService.setCurrentRefreshToken(
       refreshToken,
-      email,
+      user._id,
     );
     return {
       user: updatedUser,
@@ -91,7 +90,7 @@ export class AuthService {
     const refreshToken: string = this.getJwtRefreshToken(user);
     const updatedUser: UserType = await this.userService.setCurrentRefreshToken(
       refreshToken,
-      user.email,
+      user._id,
     );
     const accessTokenCookie: string = this.getCookieByAccessToken(accessToken);
     const refreshTokenCookie: string =
@@ -110,25 +109,25 @@ export class AuthService {
     ];
   }
 
-  public async logout(email: string): Promise<string[]> {
-    await this.userService.removeRefreshToken(email);
+  public async logout(id: string): Promise<string[]> {
+    await this.userService.removeRefreshToken(id);
     return this.getCookiesForLogOut();
   }
 
   public async getAccessTokenCookieByRefreshToken(
     currentRefreshToken: string,
-    email: string,
+    id: string,
   ): Promise<string> {
-    const user: UserType = await this.userService.findUserByEmail(email);
+    const WRONG_REFRESH_TOKEN_ERROR_MESSAGE =
+      'Wrong refresh token token. Please login.';
+    const user: UserType = await this.userService.findById(id);
     if (!user) {
-      throw new NotFoundException(
-        `User with email = ${email} does not exist. Please provide existing email.`,
-      );
+      throw new ForbiddenException(WRONG_REFRESH_TOKEN_ERROR_MESSAGE);
     }
     const isCorrectRefreshToken: boolean =
       currentRefreshToken === user.refreshToken;
     if (!isCorrectRefreshToken) {
-      throw new ForbiddenException(`Wrong refresh token. Please login.`);
+      throw new ForbiddenException(WRONG_REFRESH_TOKEN_ERROR_MESSAGE);
     }
     const accessToken: string = this.getJwtAccessToken(user);
     return this.getCookieByAccessToken(accessToken);

@@ -11,10 +11,14 @@ import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
 import { Request } from 'express';
 import { UserType } from 'src/user/schemas/user.schema';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly jwtService: JwtService,
+  ) {}
   @HttpCode(200)
   @Post('login')
   async login(@Req() req: Request): Promise<UserType> {
@@ -47,30 +51,27 @@ export class AuthController {
   @Post('logout')
   async logout(@Req() req: Request & { user: IAccessTokenPayload }) {
     const {
-      user: { email },
+      user: { id },
     } = req;
-    const cookiesForLogOut: string[] = await this.authService.logout(email);
+    const cookiesForLogOut: string[] = await this.authService.logout(id);
     req.res.setHeader('Set-Cookie', cookiesForLogOut);
   }
 
   @HttpCode(200)
-  @Get('access-token/:email')
-  async getAccessTokenByRefreshToken(
-    @Req() req: Request & { user: IAccessTokenPayload },
-  ) {
-    const {
-      params: { email },
-    } = req;
+  @Get('access-token')
+  async getAccessTokenByRefreshToken(@Req() req: Request) {
     const currentRefreshToken = req.cookies['Refresh'];
     if (!currentRefreshToken) {
       throw new UnauthorizedException(
         'Cookies does not include refresh token. Please login.',
       );
     }
+    const payload: IAccessTokenPayload =
+      this.jwtService.verify(currentRefreshToken);
     const accessTokenCookie =
       await this.authService.getAccessTokenCookieByRefreshToken(
         currentRefreshToken,
-        email,
+        payload.id,
       );
     req.res.setHeader('Set-Cookie', [accessTokenCookie]);
   }

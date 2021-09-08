@@ -33,7 +33,14 @@ export class UserService {
     return this.userModel.findOne({ email }).exec();
   }
 
-  public async isEmailAndPasswordValid(email: string, password: string): Promise<UserType> {
+  public findById(id: string): Promise<UserType> {
+    return this.userModel.findById(id).exec();
+  }
+
+  public async isEmailAndPasswordValid(
+    email: string,
+    password: string,
+  ): Promise<UserType> {
     const user: UserType | null = await this.findUserByEmail(email);
     if (!user) {
       throw new UnauthorizedException(
@@ -52,22 +59,16 @@ export class UserService {
 
   public async setCurrentRefreshToken(
     refreshToken: string,
-    email: string,
+    id: string,
   ): Promise<UserType> {
-    return await this.userModel.findOneAndUpdate(
-      { email },
-      {
-        refreshToken,
-      },
-    );
+    return await this.userModel.findByIdAndUpdate(id, {
+      refreshToken,
+    });
   }
 
-  async removeRefreshToken(email: string): Promise<UserType> {
-    return await this.userModel.findOneAndUpdate(
-      { email },
-      {
-        refreshToken: null,
-      },
-    );
+  async removeRefreshToken(id: string): Promise<UserType> {
+    return await this.userModel.findByIdAndUpdate(id, {
+      refreshToken: null,
+    });
   }
 }

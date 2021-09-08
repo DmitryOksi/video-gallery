@@ -38,7 +38,7 @@ export class AppModule implements NestModule {
       .exclude(
         { path: 'auth/register', method: RequestMethod.POST },
         { path: 'auth/login', method: RequestMethod.POST },
-        { path: 'auth/access-token/:email', method: RequestMethod.GET },
+        { path: 'auth/access-token', method: RequestMethod.GET },
       )
       .forRoutes(VideoController, AuthController);
   }
