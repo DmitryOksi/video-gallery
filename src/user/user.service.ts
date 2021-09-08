@@ -79,11 +79,9 @@ export class UserService {
     videoId: string,
     userId: string,
   ): Promise<UserType> {
-    let user: UserDocument;
-    try {
-      user = await this.userModel.findById(userId);
-    } catch (e) {
-      throw new NotFoundException(
+    const user: UserDocument = await this.userModel.findById(userId);
+    if (!user) {
+      throw new ForbiddenException(
         'You can not share video with not existing user!',
       );
     }
