@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/user/schemas/user.schema';
+import { UserType } from 'src/user/schemas/user.schema';
 import { UserService } from 'src/user/user.service';
 import { AuthDto } from './dto/auth.dto';
 
@@ -18,8 +18,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  private getJwtAccessToken(email: string): string {
-    const payload: IAccessTokenPayload = { email };
+  private getJwtAccessToken(user: UserType): string {
+    const payload: IAccessTokenPayload = this.getPayloadByUser(user);
     const accessToken: string = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
       expiresIn: `${this.configService.get(
@@ -29,8 +29,15 @@ export class AuthService {
     return accessToken;
   }
 
-  private getJwtRefreshToken(email: string): string {
-    const payload: IAccessTokenPayload = { email };
+  private getPayloadByUser(user: UserType): IAccessTokenPayload {
+    return {
+      email: user.email,
+      id: user._id,
+    };
+  }
+
+  private getJwtRefreshToken(user: UserType): string {
+    const payload: IAccessTokenPayload = this.getPayloadByUser(user);
     const refreshToken: string = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
       expiresIn: `${this.configService.get(
@@ -54,17 +61,21 @@ export class AuthService {
 
   public async register(authDto: AuthDto) {
     const { email } = authDto;
-    const oldUser: User = await this.userService.findUserByEmail(email);
+    const oldUser: UserType = await this.userService.findUserByEmail(email);
     if (oldUser) {
       throw new BadRequestException(
         `User with email = ${email} already exist, Please login`,
       );
     }
-    const refreshToken: string = this.getJwtRefreshToken(email);
-    const accessToken: string = this.getJwtAccessToken(email);
-    const user: User = await this.userService.create(refreshToken, authDto);
+    const user: UserType = await this.userService.create(authDto);
+    const refreshToken: string = this.getJwtRefreshToken(user);
+    const accessToken: string = this.getJwtAccessToken(user);
+    const updatedUser: UserType = await this.userService.setCurrentRefreshToken(
+      refreshToken,
+      email,
+    );
     return {
-      user,
+      user: updatedUser,
       refreshTokenCookie: this.getCookieByRefreshToken(refreshToken),
       accessTokenCookie: this.getCookieByAccessToken(accessToken),
     };
@@ -72,13 +83,13 @@ export class AuthService {
 
   public async login(authDto: AuthDto) {
     const { email, password } = authDto;
-    const user: User = await this.userService.isEmailAndPasswordValid(
+    const user: UserType = await this.userService.isEmailAndPasswordValid(
       email,
       password,
     );
-    const accessToken: string = this.getJwtAccessToken(email);
-    const refreshToken: string = this.getJwtRefreshToken(email);
-    const updatedUser: User = await this.userService.setCurrentRefreshToken(
+    const accessToken: string = this.getJwtAccessToken(user);
+    const refreshToken: string = this.getJwtRefreshToken(user);
+    const updatedUser: UserType = await this.userService.setCurrentRefreshToken(
       refreshToken,
       user.email,
     );
@@ -108,7 +119,7 @@ export class AuthService {
     currentRefreshToken: string,
     email: string,
   ): Promise<string> {
-    const user: User = await this.userService.findUserByEmail(email);
+    const user: UserType = await this.userService.findUserByEmail(email);
     if (!user) {
       throw new NotFoundException(
         `User with email = ${email} does not exist. Please provide existing email.`,
@@ -119,7 +130,7 @@ export class AuthService {
     if (!isCorrectRefreshToken) {
       throw new ForbiddenException(`Wrong refresh token. Please login.`);
     }
-    const accessToken: string = this.getJwtAccessToken(email);
+    const accessToken: string = this.getJwtAccessToken(user);
     return this.getCookieByAccessToken(accessToken);
   }
 }

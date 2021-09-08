@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User, UserDocument } from './schemas/user.schema';
+import { User, UserType, UserDocument } from './schemas/user.schema';
 import * as bcrypt from 'bcrypt';
 import { AuthDto } from 'src/auth/dto/auth.dto';
 
@@ -13,29 +13,28 @@ import { AuthDto } from 'src/auth/dto/auth.dto';
 export class UserService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-  public async create(refreshToken: string, authDto: AuthDto): Promise<User> {
+  public async create(authDto: AuthDto): Promise<UserType> {
     const { email } = authDto;
     const hashedPassword: string = await bcrypt.hash(authDto.password, 10);
     return await this.userModel.create({
       email,
       hashedPassword,
-      refreshToken,
     });
   }
 
-  public async findAll(offset: number, limit: number): Promise<User[]> {
+  public async findAll(offset: number, limit: number): Promise<UserType[]> {
     return await this.userModel
       .find()
       .skip(+offset)
       .limit(+limit);
   }
 
-  public findUserByEmail(email: string): Promise<User> | Promise<null> {
+  public findUserByEmail(email: string): Promise<UserType> | Promise<null> {
     return this.userModel.findOne({ email }).exec();
   }
 
-  public async isEmailAndPasswordValid(email: string, password: string) {
-    const user: User | null = await this.findUserByEmail(email);
+  public async isEmailAndPasswordValid(email: string, password: string): Promise<UserType> {
+    const user: UserType | null = await this.findUserByEmail(email);
     if (!user) {
       throw new UnauthorizedException(
         `user with email = ${email} does not exist`,
@@ -54,7 +53,7 @@ export class UserService {
   public async setCurrentRefreshToken(
     refreshToken: string,
     email: string,
-  ): Promise<User> {
+  ): Promise<UserType> {
     return await this.userModel.findOneAndUpdate(
       { email },
       {
@@ -63,7 +62,7 @@ export class UserService {
     );
   }
 
-  async removeRefreshToken(email: string): Promise<User> {
+  async removeRefreshToken(email: string): Promise<UserType> {
     return await this.userModel.findOneAndUpdate(
       { email },
       {

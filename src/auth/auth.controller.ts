@@ -10,14 +10,14 @@ import {
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
 import { Request } from 'express';
-import { User } from 'src/user/schemas/user.schema';
+import { UserType } from 'src/user/schemas/user.schema';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @HttpCode(200)
   @Post('login')
-  async login(@Req() req: Request): Promise<User> {
+  async login(@Req() req: Request): Promise<UserType> {
     const authDto: AuthDto = req.body;
     const { email, password } = authDto;
     if (!email || !password) {
@@ -31,7 +31,7 @@ export class AuthController {
 
   @HttpCode(200)
   @Post('register')
-  async register(@Req() req: Request): Promise<User> {
+  async register(@Req() req: Request): Promise<UserType> {
     const authDto: AuthDto = req.body;
     const { email, password } = authDto;
     if (!email || !password) {
