@@ -67,8 +67,8 @@ export class UserService {
   }
 
   async removeRefreshToken(id: string): Promise<UserType> {
-    return await this.userModel.findByIdAndUpdate(id, {
-      refreshToken: null,
-    });
+    const user: UserDocument = await this.userModel.findById(id);
+    user.refreshToken = null;
+    return await user.save();
   }
 }
