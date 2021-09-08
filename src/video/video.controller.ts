@@ -68,7 +68,23 @@ export class VideoController {
   }
 
   @Get(':id')
-  async watchVideoById(@Res() res: Response, @Param('id') id: string) {
+  async watchById(
+    @Res() res: Response,
+    @Req() req: Request & { user: IAccessTokenPayload },
+    @Param('id') id: string,
+  ) {
+    const {
+      user: { id: ownerId },
+    } = req;
+    const isUserAccess: boolean = await this.videoService.checkUserAccess(
+      id,
+      ownerId,
+    );
+    if (!isUserAccess) {
+      throw new ForbiddenException(
+        'You do not have access to watch provided video',
+      );
+    }
     const { destination, filename }: Video = await this.videoService.findById(
       id,
     );

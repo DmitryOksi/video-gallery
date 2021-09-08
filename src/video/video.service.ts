@@ -64,4 +64,12 @@ export class VideoService {
   async remove(id: string): Promise<Video> {
     return this.videoModel.findByIdAndDelete(id);
   }
+
+  async checkUserAccess(id: string, ownerId: string): Promise<boolean> {
+    const video: Video = await this.findById(id);
+    const user: UserType = await this.userService.findById(ownerId);
+    return (
+      video.ownerId.toString() === ownerId || user.sharedVideoIds.includes(id)
+    );
+  }
 }
