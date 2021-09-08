@@ -94,13 +94,13 @@ export class VideoController {
   }
 
   @Get()
-  getByUserId(
-    @Req() req: Request & { user: IAccessTokenPayload },
-  ): Promise<Video[]> {
+  async getByUserId(@Req() req: Request & { user: IAccessTokenPayload }) {
     const {
       user: { id: userId },
     } = req;
-    return this.videoService.getByUserId(userId);
+    const uploadedVideos: Video[] = await this.videoService.getUploaded(userId);
+    const sharedVideos: Video[] = await this.videoService.getShared(userId);
+    return { uploadedVideos, sharedVideos };
   }
 
   @Patch(':id')

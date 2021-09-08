@@ -39,8 +39,15 @@ export class VideoService {
     return await this.userService.giveAccessToWatchVideo(videoId, userId);
   }
 
-  getByUserId(userId: string): Promise<Video[]> {
+  getUploaded(userId: string): Promise<Video[]> {
     return this.videoModel.find({ ownerId: userId }).exec();
+  }
+
+  async getShared(userId: string): Promise<Video[]> {
+    const { sharedVideoIds }: UserType = await this.userService.findById(
+      userId,
+    );
+    return await this.videoModel.find().where('_id').in(sharedVideoIds);
   }
 
   findAll(): Promise<Video[]> {
