@@ -10,6 +10,9 @@ import { UserType } from 'src/user/schemas/user.schema';
 import { UserService } from 'src/user/user.service';
 import { UpdateVideoDto } from './dto/update-video.dto';
 import { Video, VideoDocument } from './schemas/video.schema';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as mongoose from 'mongoose';
 
 @Injectable()
 export class VideoService {
@@ -81,8 +84,24 @@ export class VideoService {
       .exec();
   }
 
-  async delete(id: string): Promise<Video> {
-    return this.videoModel.findByIdAndDelete(id);
+  async delete(id: string, ownerId: string): Promise<Video> {
+    const isUserAccessToDelete: boolean = await this.checkUserAccessToDelete(
+      id,
+      ownerId,
+    );
+    if (!isUserAccessToDelete) {
+      throw new ForbiddenException(
+        'You do not have access to delete provided video',
+      );
+    }
+    const video: Video = await this.videoModel.findById(id);
+    const filePath: string = path.join(video.destination, video.filename);
+    try {
+      fs.unlinkSync(filePath);
+    } catch (e) {
+      throw new BadRequestException('Failed to delete video file');
+    }
+    return await this.videoModel.findByIdAndDelete(id);
   }
 
   async checkUserAccessToGet(id: string, ownerId: string): Promise<boolean> {

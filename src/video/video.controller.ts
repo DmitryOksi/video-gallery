@@ -125,20 +125,13 @@ export class VideoController {
   }
 
   @Delete(':id')
-  async remove(
+  async delete(
     @Param('id') id: string,
     @Req() req: Request & { user: IAccessTokenPayload },
   ): Promise<Video> {
     const {
       user: { id: ownerId },
     } = req;
-    const isUserAccessToDelete: boolean =
-      await this.videoService.checkUserAccessToDelete(id, ownerId);
-    if (!isUserAccessToDelete) {
-      throw new ForbiddenException(
-        'You do not have access to delete provided video',
-      );
-    }
-    return await this.videoService.delete(id);
+    return await this.videoService.delete(id, ownerId);
   }
 }
