@@ -12,6 +12,15 @@ import { AuthDto } from './dto/auth.dto';
 import { Request } from 'express';
 import { UserType } from 'src/user/schemas/user.schema';
 import { JwtService } from '@nestjs/jwt';
+import {
+  ApiBadRequestResponse,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiForbiddenResponse,
+  ApiOkResponse,
+  ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
+import { ErrorMessages } from 'src/helpers/error.messages';
 
 @Controller('auth')
 export class AuthController {
@@ -19,13 +28,22 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly jwtService: JwtService,
   ) {}
-  @HttpCode(200)
   @Post('login')
+  @HttpCode(200)
+  @ApiBody({ type: AuthDto })
+  @ApiOkResponse({ description: 'User login' })
+  @ApiBadRequestResponse({
+    description: ErrorMessages.PROVIDE_EMAIL_AND_PASSWORD,
+  })
+  @ApiUnauthorizedResponse({
+    description: ErrorMessages.USER_DOES_NOT_EXIST,
+  })
+  @ApiForbiddenResponse({ description: ErrorMessages.WRONG_PASSWORD })
   async login(@Req() req: Request): Promise<UserType> {
     const authDto: AuthDto = req.body;
     const { email, password } = authDto;
     if (!email || !password) {
-      throw new BadRequestException('Email and password required!');
+      throw new BadRequestException(ErrorMessages.PROVIDE_EMAIL_AND_PASSWORD);
     }
     const { accessTokenCookie, refreshTokenCookie, user } =
       await this.authService.login(authDto);
@@ -33,13 +51,18 @@ export class AuthController {
     return user;
   }
 
-  @HttpCode(200)
   @Post('register')
+  @HttpCode(201)
+  @ApiBody({ type: AuthDto })
+  @ApiCreatedResponse({ description: 'User registration' })
+  @ApiBadRequestResponse({
+    description: ErrorMessages.PROVIDE_EMAIL_AND_PASSWORD,
+  })
   async register(@Req() req: Request): Promise<UserType> {
     const authDto: AuthDto = req.body;
     const { email, password } = authDto;
     if (!email || !password) {
-      throw new BadRequestException('Email and password required!');
+      throw new BadRequestException(ErrorMessages.PROVIDE_EMAIL_AND_PASSWORD);
     }
     const { accessTokenCookie, refreshTokenCookie, user } =
       await this.authService.register(authDto);
@@ -49,6 +72,7 @@ export class AuthController {
 
   @HttpCode(200)
   @Post('logout')
+  @ApiOkResponse({ description: 'User logout' })
   async logout(@Req() req: Request & { user: IAccessTokenPayload }) {
     const {
       user: { id },
@@ -59,12 +83,11 @@ export class AuthController {
 
   @HttpCode(200)
   @Get('access-token')
+  @ApiOkResponse({ description: 'Get access token by refresh token' })
   async getAccessTokenByRefreshToken(@Req() req: Request) {
     const currentRefreshToken = req.cookies['Refresh'];
     if (!currentRefreshToken) {
-      throw new UnauthorizedException(
-        'Cookies does not include refresh token. Please login.',
-      );
+      throw new UnauthorizedException(ErrorMessages.PROVIDE_REFRESH_TOKEN);
     }
     const payload: IAccessTokenPayload =
       this.jwtService.verify(currentRefreshToken);

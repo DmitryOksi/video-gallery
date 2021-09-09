@@ -1,0 +1,18 @@
+export enum ErrorMessages {
+  PROVIDE_EMAIL_AND_PASSWORD = 'Provide email and password',
+  PROVIDE_OFFSET_AND_LIMIT = 'Provide offset and limit',
+  PROVIDE_REFRESH_TOKEN = 'Provide refresh token',
+  PROVIDE_ACCESS_TOKEN = 'Provide access token',
+  NOT_VALID_ACCESS_TOKEN = 'Not valid access token',
+  NOT_VALID_REFRESH_TOKEN = 'Not valid refresh token',
+  WRONG_PASSWORD = 'Wrong password',
+  USER_DOES_NOT_EXIST = 'User does not exist',
+  USER_ALREADY_EXISTS = `User already exists`,
+  USER_ALREADY_HAVE_PERMISSION_TO_WATCH_VIDEO = 'User already have permission to watch video',
+  USER_DO_NOT_HAVE_PERMISSION_TO_WATCH_VIDEO = 'User do not have permission to watch video',
+  USER_DO_NOT_HAVE_PERMISSION_TO_SHARE_VIDEO = 'User do not have permission to share video',
+  USER_DO_NOT_HAVE_PERMISSION_TO_DELETE_VIDEO = 'User do not have permission to delete video',
+  USER_CAN_UPLOAD_ONLY_VIDEO_FILE = 'User can upload only video file',
+  VIDEO_DOES_NOT_EXIST = 'Video does not exist',
+  FAILED_TO_DELETE_VIDEO_FILE = 'Failed to delete video file',
+}

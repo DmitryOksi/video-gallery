@@ -1,4 +1,5 @@
 import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
+import { ErrorMessages } from 'src/helpers/error.messages';
 import { UserService } from './user.service';
 
 @Controller('users')
@@ -10,7 +11,7 @@ export class UserController {
     @Query('limit') limit: string | number,
   ) {
     if (!offset || !limit) {
-      throw new BadRequestException('offset and limit are required!');
+      throw new BadRequestException(ErrorMessages.PROVIDE_OFFSET_AND_LIMIT);
     }
     return await this.userSerivce.findAll(offset, limit);
   }

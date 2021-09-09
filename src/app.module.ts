@@ -36,9 +36,9 @@ export class AppModule implements NestModule {
     consumer
       .apply(AuthentificationMiddleware)
       .exclude(
-        { path: 'auth/register', method: RequestMethod.POST },
-        { path: 'auth/login', method: RequestMethod.POST },
-        { path: 'auth/access-token', method: RequestMethod.GET },
+        { path: 'api/auth/register', method: RequestMethod.POST },
+        { path: 'api/auth/login', method: RequestMethod.POST },
+        { path: 'api/auth/access-token', method: RequestMethod.GET },
       )
       .forRoutes(VideoController, AuthController);
   }

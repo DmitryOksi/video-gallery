@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UserType } from 'src/user/schemas/user.schema';
 import { UserService } from 'src/user/user.service';
 import { AuthDto } from './dto/auth.dto';
+import { ErrorMessages } from '../helpers/error.messages';
 
 @Injectable()
 export class AuthService {
@@ -62,9 +63,7 @@ export class AuthService {
     const { email } = authDto;
     const oldUser: UserType = await this.userService.findUserByEmail(email);
     if (oldUser) {
-      throw new BadRequestException(
-        `User with email = ${email} already exist, Please login`,
-      );
+      throw new BadRequestException(ErrorMessages.USER_ALREADY_EXISTS);
     }
     const user: UserType = await this.userService.create(authDto);
     const refreshToken: string = this.getJwtRefreshToken(user);
@@ -118,16 +117,14 @@ export class AuthService {
     currentRefreshToken: string,
     id: string,
   ): Promise<string> {
-    const WRONG_REFRESH_TOKEN_ERROR_MESSAGE =
-      'Wrong refresh token token. Please login.';
     const user: UserType = await this.userService.findById(id);
     if (!user) {
-      throw new ForbiddenException(WRONG_REFRESH_TOKEN_ERROR_MESSAGE);
+      throw new ForbiddenException(ErrorMessages.NOT_VALID_REFRESH_TOKEN);
     }
     const isCorrectRefreshToken: boolean =
       currentRefreshToken === user.refreshToken;
     if (!isCorrectRefreshToken) {
-      throw new ForbiddenException(WRONG_REFRESH_TOKEN_ERROR_MESSAGE);
+      throw new ForbiddenException(ErrorMessages.NOT_VALID_REFRESH_TOKEN);
     }
     const accessToken: string = this.getJwtAccessToken(user);
     return this.getCookieByAccessToken(accessToken);

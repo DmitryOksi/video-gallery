@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
+import { ErrorMessages } from 'src/helpers/error.messages';
 
 @Injectable()
 export class AuthentificationMiddleware implements NestMiddleware {
@@ -16,14 +17,14 @@ export class AuthentificationMiddleware implements NestMiddleware {
   ) {
     const accessToken = req.cookies['Authentication'];
     if (!accessToken) {
-      throw new UnauthorizedException('provide access token');
+      throw new UnauthorizedException(ErrorMessages.PROVIDE_ACCESS_TOKEN);
     }
     jwt.verify(
       accessToken,
       process.env.JWT_ACCESS_TOKEN_SECRET,
       (err, user) => {
         if (err) {
-          throw new ForbiddenException('not valid token');
+          throw new ForbiddenException(ErrorMessages.NOT_VALID_ACCESS_TOKEN);
         }
         req.user = user;
       },

@@ -12,6 +12,7 @@ import {
   Res,
   Req,
   Query,
+  HttpCode,
 } from '@nestjs/common';
 import { VideoService } from './video.service';
 import { CreateVideoDto } from './dto/create-video.dto';
@@ -23,6 +24,7 @@ import { createReadStream } from 'fs';
 import { join } from 'path';
 import { Response, Request } from 'express';
 import { UserType } from 'src/user/schemas/user.schema';
+import { ErrorMessages } from 'src/helpers/error.messages';
 
 @Controller('videos')
 export class VideoController {
@@ -53,6 +55,7 @@ export class VideoController {
   }
 
   @Post()
+  @HttpCode(201)
   @UseInterceptors(FileInterceptor('file', { dest: 'uploads/' }))
   async uploadVideo(
     @UploadedFile() file: Express.Multer.File,
@@ -69,7 +72,9 @@ export class VideoController {
       user: { id: ownerId },
     } = req;
     if (path.basename(path.dirname(mimetype)) !== 'video') {
-      throw new ForbiddenException('You can upload only video files!');
+      throw new ForbiddenException(
+        ErrorMessages.USER_CAN_UPLOAD_ONLY_VIDEO_FILE,
+      );
     }
     return await this.videoService.create({
       originalname,
@@ -105,7 +110,7 @@ export class VideoController {
       await this.videoService.checkUserAccessToGet(id, ownerId);
     if (!isUserAccessToGet) {
       throw new ForbiddenException(
-        'You do not have access to watch provided video',
+        ErrorMessages.USER_DO_NOT_HAVE_PERMISSION_TO_WATCH_VIDEO,
       );
     }
     const { destination, filename }: Video = await this.videoService.findById(

@@ -12,7 +12,7 @@ import { UpdateVideoDto } from './dto/update-video.dto';
 import { Video, VideoDocument } from './schemas/video.schema';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as mongoose from 'mongoose';
+import { ErrorMessages } from 'src/helpers/error.messages';
 
 @Injectable()
 export class VideoService {
@@ -32,12 +32,14 @@ export class VideoService {
   ): Promise<UserType> {
     if (userId === ownerId) {
       throw new BadRequestException(
-        'You can not share video with yourself, you already have access',
+        ErrorMessages.USER_ALREADY_HAVE_PERMISSION_TO_WATCH_VIDEO,
       );
     }
     const video: Video = await this.findById(videoId);
     if (video.ownerId.toString() !== ownerId) {
-      throw new ForbiddenException(`You do not have permission to share video`);
+      throw new ForbiddenException(
+        ErrorMessages.USER_DO_NOT_HAVE_PERMISSION_TO_SHARE_VIDEO,
+      );
     }
     return await this.userService.giveAccessToWatchVideo(videoId, userId);
   }
@@ -73,7 +75,7 @@ export class VideoService {
   async findById(id: string): Promise<Video> {
     const video: Video = await this.videoModel.findById(id);
     if (!video) {
-      throw new NotFoundException('Provided video does not exist');
+      throw new NotFoundException(ErrorMessages.VIDEO_DOES_NOT_EXIST);
     }
     return video;
   }
@@ -91,7 +93,7 @@ export class VideoService {
     );
     if (!isUserAccessToDelete) {
       throw new ForbiddenException(
-        'You do not have access to delete provided video',
+        ErrorMessages.USER_DO_NOT_HAVE_PERMISSION_TO_DELETE_VIDEO,
       );
     }
     const video: Video = await this.videoModel.findById(id);
@@ -99,7 +101,7 @@ export class VideoService {
     try {
       fs.unlinkSync(filePath);
     } catch (e) {
-      throw new BadRequestException('Failed to delete video file');
+      throw new BadRequestException(ErrorMessages.FAILED_TO_DELETE_VIDEO_FILE);
     }
     return await this.videoModel.findByIdAndDelete(id);
   }
