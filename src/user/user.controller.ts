@@ -6,8 +6,8 @@ export class UserController {
   constructor(private readonly userSerivce: UserService) {}
   @Get()
   async findAll(
-    @Query('offset') offset: number,
-    @Query('limit') limit: number,
+    @Query('offset') offset: string | number,
+    @Query('limit') limit: string | number,
   ) {
     if (!offset || !limit) {
       throw new BadRequestException('offset and limit are required!');

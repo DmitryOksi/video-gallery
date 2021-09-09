@@ -39,19 +39,32 @@ export class VideoService {
     return await this.userService.giveAccessToWatchVideo(videoId, userId);
   }
 
-  getUploaded(userId: string): Promise<Video[]> {
-    return this.videoModel.find({ ownerId: userId }).exec();
+  getUploaded(
+    userId: string,
+    offset: string | number,
+    limit: string | number,
+  ): Promise<Video[]> {
+    return this.videoModel
+      .find({ ownerId: userId })
+      .skip(+offset)
+      .limit(+limit)
+      .exec();
   }
 
-  async getShared(userId: string): Promise<Video[]> {
+  async getShared(
+    userId: string,
+    offset: string | number,
+    limit: string | number,
+  ): Promise<Video[]> {
     const { sharedVideoIds }: UserType = await this.userService.findById(
       userId,
     );
-    return await this.videoModel.find().where('_id').in(sharedVideoIds);
-  }
-
-  findAll(): Promise<Video[]> {
-    return this.videoModel.find().exec();
+    return await this.videoModel
+      .find()
+      .where('_id')
+      .in(sharedVideoIds)
+      .skip(+offset)
+      .limit(+limit);
   }
 
   async findById(id: string): Promise<Video> {

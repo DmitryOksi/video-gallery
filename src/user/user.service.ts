@@ -25,7 +25,10 @@ export class UserService {
     });
   }
 
-  public async findAll(offset: number, limit: number): Promise<UserType[]> {
+  public async findAll(
+    offset: string | number,
+    limit: string | number,
+  ): Promise<UserType[]> {
     return await this.userModel
       .find()
       .skip(+offset)

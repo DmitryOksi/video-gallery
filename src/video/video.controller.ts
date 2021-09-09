@@ -11,6 +11,7 @@ import {
   ForbiddenException,
   Res,
   Req,
+  Query,
 } from '@nestjs/common';
 import { VideoService } from './video.service';
 import { CreateVideoDto } from './dto/create-video.dto';
@@ -26,6 +27,30 @@ import { UserType } from 'src/user/schemas/user.schema';
 @Controller('videos')
 export class VideoController {
   constructor(private readonly videoService: VideoService) {}
+
+  @Get('own')
+  async getUploaded(
+    @Req() req: Request & { user: IAccessTokenPayload },
+    @Query('offset') offset: string | number,
+    @Query('limit') limit: string | number,
+  ): Promise<Video[]> {
+    const {
+      user: { id: userId },
+    } = req;
+    return await this.videoService.getUploaded(userId, offset, limit);
+  }
+
+  @Get('common')
+  async getShared(
+    @Req() req: Request & { user: IAccessTokenPayload },
+    @Query('offset') offset: string | number,
+    @Query('limit') limit: string | number,
+  ): Promise<Video[]> {
+    const {
+      user: { id: userId },
+    } = req;
+    return await this.videoService.getShared(userId, offset, limit);
+  }
 
   @Post()
   @UseInterceptors(FileInterceptor('file', { dest: 'uploads/' }))
@@ -89,16 +114,6 @@ export class VideoController {
     const filePath: string = path.join(destination, filename);
     const file = createReadStream(join(process.cwd(), filePath));
     file.pipe(res);
-  }
-
-  @Get()
-  async getByUserId(@Req() req: Request & { user: IAccessTokenPayload }) {
-    const {
-      user: { id: userId },
-    } = req;
-    const uploadedVideos: Video[] = await this.videoService.getUploaded(userId);
-    const sharedVideos: Video[] = await this.videoService.getShared(userId);
-    return { uploadedVideos, sharedVideos };
   }
 
   @Patch(':id')
