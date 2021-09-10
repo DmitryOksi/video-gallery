@@ -5,7 +5,11 @@ import {
   BadRequestException,
   HttpCode,
 } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiOkResponse } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiCookieAuth,
+  ApiOkResponse,
+} from '@nestjs/swagger';
 import { ErrorMessages } from 'src/helpers/error.messages';
 import { UserService } from './user.service';
 import { QueryParamsDto } from '../helpers/query-params.dto';
@@ -14,8 +18,8 @@ import { SafeUser, UserType } from './schemas/user.schema';
 @Controller('users')
 export class UserController {
   constructor(private readonly userSerivce: UserService) {}
-
   @Get()
+  @ApiCookieAuth()
   @HttpCode(200)
   @ApiOkResponse({
     description: 'List of users',

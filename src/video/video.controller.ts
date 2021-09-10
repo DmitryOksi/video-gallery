@@ -30,6 +30,7 @@ import {
   ApiBadRequestResponse,
   ApiBody,
   ApiConsumes,
+  ApiCookieAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -42,6 +43,7 @@ export class VideoController {
   constructor(private readonly videoService: VideoService) {}
 
   @Get('own')
+  @ApiCookieAuth()
   @HttpCode(200)
   @ApiOkResponse({
     description: 'List of uploaded videos',
@@ -60,6 +62,7 @@ export class VideoController {
   }
 
   @Get('common')
+  @ApiCookieAuth()
   @HttpCode(200)
   @ApiOkResponse({
     description: 'List of shared videos',
@@ -78,6 +81,7 @@ export class VideoController {
   }
 
   @Post('upload')
+  @ApiCookieAuth()
   @HttpCode(201)
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -120,6 +124,7 @@ export class VideoController {
   }
 
   @Patch('access')
+  @ApiCookieAuth()
   @HttpCode(200)
   @ApiOkResponse({
     description: 'Video shared',
@@ -146,6 +151,7 @@ export class VideoController {
   }
 
   @Get(':id')
+  @ApiCookieAuth()
   @HttpCode(200)
   @ApiOkResponse({ description: 'Video streamed' })
   @ApiForbiddenResponse({
@@ -176,6 +182,7 @@ export class VideoController {
   }
 
   @Delete(':id')
+  @ApiCookieAuth()
   @HttpCode(200)
   @ApiOkResponse({
     description: 'Video deleted',

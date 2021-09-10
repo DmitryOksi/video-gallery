@@ -16,6 +16,7 @@ import { JwtService } from '@nestjs/jwt';
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiCookieAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiNotFoundResponse,
@@ -80,6 +81,7 @@ export class AuthController {
 
   @HttpCode(200)
   @Post('logout')
+  @ApiCookieAuth()
   @ApiOkResponse({ description: 'User logout' })
   @ApiNotFoundResponse({ description: ErrorMessages.USER_DOES_NOT_EXIST })
   async logout(@Req() req: Request & { user: IAccessTokenPayload }) {
