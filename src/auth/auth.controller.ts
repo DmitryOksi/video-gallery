@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -10,13 +11,14 @@ import {
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
 import { Request } from 'express';
-import { UserType } from 'src/user/schemas/user.schema';
+import { SafeUser, UserType } from 'src/user/schemas/user.schema';
 import { JwtService } from '@nestjs/jwt';
 import {
   ApiBadRequestResponse,
   ApiBody,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -28,10 +30,11 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly jwtService: JwtService,
   ) {}
+
   @Post('login')
   @HttpCode(200)
   @ApiBody({ type: AuthDto })
-  @ApiOkResponse({ description: 'User login' })
+  @ApiOkResponse({ description: 'User login', type: SafeUser })
   @ApiBadRequestResponse({
     description: ErrorMessages.PROVIDE_EMAIL_AND_PASSWORD,
   })
@@ -39,8 +42,10 @@ export class AuthController {
     description: ErrorMessages.USER_DOES_NOT_EXIST,
   })
   @ApiForbiddenResponse({ description: ErrorMessages.WRONG_PASSWORD })
-  async login(@Req() req: Request): Promise<UserType> {
-    const authDto: AuthDto = req.body;
+  async login(
+    @Req() req: Request,
+    @Body() authDto: AuthDto,
+  ): Promise<UserType> {
     const { email, password } = authDto;
     if (!email || !password) {
       throw new BadRequestException(ErrorMessages.PROVIDE_EMAIL_AND_PASSWORD);
@@ -54,12 +59,15 @@ export class AuthController {
   @Post('register')
   @HttpCode(201)
   @ApiBody({ type: AuthDto })
-  @ApiCreatedResponse({ description: 'User registration' })
+  @ApiCreatedResponse({ description: 'User register', type: SafeUser })
   @ApiBadRequestResponse({
     description: ErrorMessages.PROVIDE_EMAIL_AND_PASSWORD,
   })
-  async register(@Req() req: Request): Promise<UserType> {
-    const authDto: AuthDto = req.body;
+  @ApiForbiddenResponse({ description: ErrorMessages.USER_ALREADY_EXISTS })
+  async register(
+    @Req() req: Request,
+    @Body() authDto: AuthDto,
+  ): Promise<UserType> {
     const { email, password } = authDto;
     if (!email || !password) {
       throw new BadRequestException(ErrorMessages.PROVIDE_EMAIL_AND_PASSWORD);
@@ -73,6 +81,7 @@ export class AuthController {
   @HttpCode(200)
   @Post('logout')
   @ApiOkResponse({ description: 'User logout' })
+  @ApiNotFoundResponse({ description: ErrorMessages.USER_DOES_NOT_EXIST })
   async logout(@Req() req: Request & { user: IAccessTokenPayload }) {
     const {
       user: { id },
@@ -83,7 +92,10 @@ export class AuthController {
 
   @HttpCode(200)
   @Get('access-token')
-  @ApiOkResponse({ description: 'Get access token by refresh token' })
+  @ApiOkResponse({ description: 'Access token received' })
+  @ApiUnauthorizedResponse({ description: ErrorMessages.PROVIDE_REFRESH_TOKEN })
+  @ApiNotFoundResponse({ description: ErrorMessages.USER_DOES_NOT_EXIST })
+  @ApiForbiddenResponse({ description: ErrorMessages.NOT_VALID_REFRESH_TOKEN })
   async getAccessTokenByRefreshToken(@Req() req: Request) {
     const currentRefreshToken = req.cookies['Refresh'];
     if (!currentRefreshToken) {

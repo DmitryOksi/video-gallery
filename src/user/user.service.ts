@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   ForbiddenException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -72,6 +73,9 @@ export class UserService {
 
   async removeRefreshToken(id: string): Promise<UserType> {
     const user: UserDocument = await this.userModel.findById(id);
+    if (!user) {
+      throw new NotFoundException(ErrorMessages.USER_DOES_NOT_EXIST);
+    }
     user.refreshToken = null;
     return await user.save();
   }
@@ -82,7 +86,7 @@ export class UserService {
   ): Promise<UserType> {
     const user: UserDocument = await this.userModel.findById(userId);
     if (!user) {
-      throw new ForbiddenException(ErrorMessages.USER_DOES_NOT_EXIST);
+      throw new NotFoundException(ErrorMessages.USER_DOES_NOT_EXIST);
     }
     if (user.sharedVideoIds.includes(videoId)) {
       throw new ForbiddenException(

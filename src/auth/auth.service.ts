@@ -1,7 +1,7 @@
 import {
-  BadRequestException,
   ForbiddenException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -63,7 +63,7 @@ export class AuthService {
     const { email } = authDto;
     const oldUser: UserType = await this.userService.findUserByEmail(email);
     if (oldUser) {
-      throw new BadRequestException(ErrorMessages.USER_ALREADY_EXISTS);
+      throw new ForbiddenException(ErrorMessages.USER_ALREADY_EXISTS);
     }
     const user: UserType = await this.userService.create(authDto);
     const refreshToken: string = this.getJwtRefreshToken(user);
@@ -119,7 +119,7 @@ export class AuthService {
   ): Promise<string> {
     const user: UserType = await this.userService.findById(id);
     if (!user) {
-      throw new ForbiddenException(ErrorMessages.NOT_VALID_REFRESH_TOKEN);
+      throw new NotFoundException(ErrorMessages.USER_DOES_NOT_EXIST);
     }
     const isCorrectRefreshToken: boolean =
       currentRefreshToken === user.refreshToken;

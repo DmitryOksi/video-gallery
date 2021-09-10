@@ -80,12 +80,6 @@ export class VideoService {
     return video;
   }
 
-  update(id: string, updateVideoDto: UpdateVideoDto): Promise<Video> {
-    return this.videoModel
-      .findByIdAndUpdate(id, updateVideoDto, { new: true })
-      .exec();
-  }
-
   async delete(id: string, ownerId: string): Promise<Video> {
     const isUserAccessToDelete: boolean = await this.checkUserAccessToDelete(
       id,
@@ -96,7 +90,7 @@ export class VideoService {
         ErrorMessages.USER_DO_NOT_HAVE_PERMISSION_TO_DELETE_VIDEO,
       );
     }
-    const video: Video = await this.videoModel.findById(id);
+    const video: Video = await this.findById(id);
     const filePath: string = path.join(video.destination, video.filename);
     try {
       fs.unlinkSync(filePath);
