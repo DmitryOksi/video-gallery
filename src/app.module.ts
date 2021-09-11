@@ -15,6 +15,8 @@ import { UserModule } from './user/user.module';
 import { AuthentificationMiddleware } from './middlewares/authentication';
 import { VideoController } from './video/video.controller';
 import { AuthController } from './auth/auth.controller';
+import { APP_FILTER } from '@nestjs/core';
+import { HttpExceptionFilter } from './helpers/http-exception.filter';
 
 @Module({
   imports: [
@@ -29,7 +31,13 @@ import { AuthController } from './auth/auth.controller';
     UserModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
