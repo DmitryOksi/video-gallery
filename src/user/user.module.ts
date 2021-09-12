@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User, UserSchema, UserType } from './schemas/user.schema';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UserController } from './user.controller';
 
 const userMiddleware = {
   virtuals: true,
@@ -30,6 +29,5 @@ const userMiddleware = {
   ],
   providers: [UserService],
   exports: [UserService],
-  controllers: [UserController],
 })
 export class UserModule {}

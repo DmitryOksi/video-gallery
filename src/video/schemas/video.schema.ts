@@ -22,8 +22,8 @@ export class Video {
   public filename: string;
 
   @Prop({ required: true })
-  @ApiProperty({ type: Number, description: 'size' })
-  public size: number;
+  @ApiProperty({ type: Number, description: 'sizeBytes' })
+  public sizeBytes: number;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   @ApiProperty({ type: String, description: 'ownerId' })

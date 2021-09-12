@@ -103,7 +103,7 @@ export class VideoController {
       originalname,
       destination,
       filename,
-      size,
+      size: sizeBytes,
       mimetype,
     }: CreateVideoDto = file;
     const {
@@ -118,7 +118,7 @@ export class VideoController {
       originalname,
       destination,
       filename,
-      size,
+      sizeBytes,
       ownerId,
     });
   }
