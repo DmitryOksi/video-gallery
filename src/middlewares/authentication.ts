@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
-import { ErrorMessages } from 'src/helpers/error.messages';
+import { ErrorMessages } from 'src/errors/error.messages';
 
 @Injectable()
 export class AuthentificationMiddleware implements NestMiddleware {

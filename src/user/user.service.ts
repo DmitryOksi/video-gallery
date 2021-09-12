@@ -9,7 +9,7 @@ import { Model } from 'mongoose';
 import { User, UserType, UserDocument } from './schemas/user.schema';
 import * as bcrypt from 'bcrypt';
 import { AuthDto } from 'src/auth/dto/auth.dto';
-import { ErrorMessages } from 'src/helpers/error.messages';
+import { ErrorMessages } from 'src/errors/error.messages';
 
 @Injectable()
 export class UserService {

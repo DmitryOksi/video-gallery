@@ -25,7 +25,7 @@ import { createReadStream } from 'fs';
 import { join } from 'path';
 import { Response, Request } from 'express';
 import { SafeUser, UserType } from 'src/user/schemas/user.schema';
-import { ErrorMessages } from 'src/helpers/error.messages';
+import { ErrorMessages } from 'src/errors/error.messages';
 import {
   ApiBadRequestResponse,
   ApiBody,
@@ -36,7 +36,7 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
 } from '@nestjs/swagger';
-import { QueryParamsDto } from 'src/helpers/query-params.dto';
+import { QueryParamsDto } from 'src/global.dto';
 
 @Controller('videos')
 export class VideoController {

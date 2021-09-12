@@ -23,7 +23,7 @@ import {
   ApiOkResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { ErrorMessages } from 'src/helpers/error.messages';
+import { ErrorMessages } from 'src/errors/error.messages';
 
 @Controller('auth')
 export class AuthController {

@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UserType } from 'src/user/schemas/user.schema';
 import { UserService } from 'src/user/user.service';
 import { AuthDto } from './dto/auth.dto';
-import { ErrorMessages } from '../helpers/error.messages';
+import { ErrorMessages } from '../errors/error.messages';
 
 @Injectable()
 export class AuthService {

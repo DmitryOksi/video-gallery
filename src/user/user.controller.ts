@@ -10,9 +10,9 @@ import {
   ApiCookieAuth,
   ApiOkResponse,
 } from '@nestjs/swagger';
-import { ErrorMessages } from 'src/helpers/error.messages';
+import { ErrorMessages } from 'src/errors/error.messages';
 import { UserService } from './user.service';
-import { QueryParamsDto } from '../helpers/query-params.dto';
+import { QueryParamsDto } from '../global.dto';
 import { SafeUser, UserType } from './schemas/user.schema';
 
 @Controller('users')
